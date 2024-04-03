@@ -15,6 +15,10 @@ You will need to find out the parition number hosting your LUKS partition(s). Th
 
 Choose whether you want TPM2 or FIDO2 decryption
 
+If you are concerned about following changes to `/etc/*` being edited, do know that it is safe to modify the following files. It is worth-while to perform
+
+sudo os-tree admin pin 0 before you make any of the changes so that you may rollback to a state before changes are made. Also, if you make the following changes to `/etc/*` they will be lost upon performing a rps-ostree rollback to before these changes are made. This is because Atomic Desktop treats each deployment as its own independent copy of `/etc*/` meaning that if you do rollback, the changes to that copy will be rolled back. But, if you do make changes to `/etc/*` and upgrade, the defualts of the deployment will be merged with your current copy of `/etc/*` so the modifications will be kept. Overall, unless you rollback, these changes will be kept.
+
 How to use a TPM2 chip systemd-cryptenroll
 
 First, add the tpm2-tss module to your dracut configuration
@@ -48,3 +52,10 @@ Third, update your /etc/crypttab by appending fido2-device=auto
 Finally, rebuild your initramfs by using the following command:
 
 rpm-ostree initramfs --enable --arg=--force-add --arg=fido2-device
+
+After performing rpm-ostree initramfs <...> it will prompt for your PIN and a touch.
+
+Considerations
+
+Although the FIDO2 may appear as if it is not functioning properly at boot and the prompt look the same as the passphrase prompts, after it is enrolled, you should enter your PIN followed by a touch prompt. If you press the ESC key, you will see in the terminal boot screen that it is still prompting for your PIN and a touch (if your key is configured that way). Also, if you lose your FIDO2 key, you will still be able to enter your passphrase as the boot screen, since systemd-cryptenroll does not allow for a backup key.
+
